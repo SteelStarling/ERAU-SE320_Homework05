@@ -1,4 +1,4 @@
-from src import BankAccount
+from bank_account import BankAccount
 import pytest
 
 @pytest.fixture
@@ -7,7 +7,7 @@ def basic_account(request = None):
     Initial balance can be changed via mark.parameterize as shown below"""
     # if not passed in mark, default balance to 500
     # (I'm sure there's a more elegant way to do this within PyTest, but I could not find it)
-    if request.param is None:
+    if request is None:
         balance = 500
     else:
         balance = request.param
@@ -16,18 +16,19 @@ def basic_account(request = None):
     yield account
     account.delete_account()
 
-@pytest.mark.parametrize("basic_account", [-500, 0, 500], indirect=True)
-def test_init(basic_account):
+
+def test_init():
     """Tests if the account is created correctly"""
     pass
 
 def test_from_json():
+    """Tests if """
     pass
 
 def test_to_json():
     pass
 
-@pytest.mark.parametrize("basic_account", [500], indirect=True)
+@pytest.mark.parametrize("basic_account", [500, 1000], indirect=True)
 def test_deposit(basic_account):
     """Tests if the deposit function works correctly
     Deposits of zero currency shouldn't affect the balance or be logged as transactions
@@ -60,7 +61,7 @@ def test_deposit(basic_account):
     # invalid deposits will not add an item to the transaction list
     assert len(basic_account.transactions) == 1, "Invalid transaction recorded in transaction log"
 
-@pytest.mark.parametrize("basic_account", [500], indirect=True)
+@pytest.mark.parametrize("basic_account", [500, 1000], indirect=True)
 def test_withdraw(basic_account):
     """Tests if the withdraw function works correctly
     Withdraws of zero currency shouldn't affect the balance or be logged as transactions
@@ -76,34 +77,43 @@ def test_withdraw(basic_account):
 
     # zero amounts should do nothing
     basic_account.withdraw(0)
-    assert basic_account.balance == initial_balance, "Zero withdraws should do nothing"
+    assert basic_account.balance == initial_balance, \
+        "Zero withdraws should do nothing"
 
     # zero amount transactions should not be logged...as they really don't happen
-    assert len(basic_account.transactions) == 0, "Transaction added to log despite no transaction occurring"
+    assert len(basic_account.transactions) == 0, \
+        "Transaction added to log despite no transaction occurring"
 
     # valid amounts should decrease the balance (down to a max of zero)
     basic_account.withdraw(positive_withdraw)
-    assert basic_account.balance == initial_balance - positive_withdraw, "Positive withdraws should decrease balance"
+    assert basic_account.balance == initial_balance - positive_withdraw, \
+        "Positive withdraws should decrease balance"
 
     # valid withdraw should add an item to the transaction list
-    assert len(basic_account.transactions) == 1, "Incorrect number of transactions recorded"
+    assert len(basic_account.transactions) == 1, \
+        "Incorrect number of transactions recorded"
 
     # withdrawing more than the current balance raises a value error
     with pytest.raises(Exception) as e:
         basic_account.withdraw(oversized_withdraw)
-    assert e.errisinstance(ValueError), "ValueError not raised on oversized withdraws"
-    assert str(e.value) == "Oversized withdraws (balance < 0) are invalid!", "Incorrect ValueError raised"
+    assert e.errisinstance(ValueError), \
+        "ValueError not raised on oversized withdraws"
+    assert str(e.value) == "Oversized withdraws (balance < 0) are invalid!", \
+        "Incorrect ValueError raised"
 
     # non-positive amounts raise ValueError
     with pytest.raises(Exception) as e:
         basic_account.withdraw(negative_withdraw)
-    assert e.errisinstance(ValueError), "ValueError not raised on negative withdraws"
-    assert str(e.value) == "Negative withdraws are invalid!", "Incorrect ValueError raised"
+    assert e.errisinstance(ValueError), \
+        "ValueError not raised on negative withdraws"
+    assert str(e.value) == "Negative withdraws are invalid!", \
+        "Incorrect ValueError raised"
 
     # invalid withdraws will not add a items to the transaction list
-    assert len(basic_account.transactions) == 1, "Invalid transaction recorded in transaction log"
+    assert len(basic_account.transactions) == 1, \
+        "Invalid transaction recorded in transaction log"
 
-@pytest.mark.parametrize("basic_account", [500], indirect=True)
+@pytest.mark.parametrize("basic_account", [500, 1000], indirect=True)
 def test_get_balance(basic_account):
     """Tests if get_balance returns the correct value"""
 

@@ -5,12 +5,12 @@ Serialization and deserialization of the account is implemented using json.
 """
 class BankAccount:
     """A simple BankAccount class with methods to deposit, withdraw, and get_balance."""
-    
+
     def __init__(self, account_number: int, owner: str = "", balance: float = 0.0):
         """Initialize a BankAccount with an owner and an optional starting balance."""
         self.account_number = account_number
         self.owner = owner
-        self.balance = balance
+        self.balance = max(balance, 0) # ensure balance is greater than 0
         self.transactions = []
 
     def delete_account(self):
@@ -30,11 +30,41 @@ class BankAccount:
 
     def deposit(self, amount: float):
         """Deposit a positive amount to the account."""
-        pass
+
+        # prevent negative deposits
+        if amount < 0:
+            raise ValueError("Negative deposits are invalid!")
+
+        # deposit value
+        self.balance += amount
+
+        # only add to transactions if not zero
+        if amount != 0:
+            # each transaction is dict of type and value
+            transaction = {"type": "deposit", "value": amount}
+            self.transactions.append(transaction)
+
 
     def withdraw(self, amount: float):
         """Withdraw a positive amount if sufficient balance exists."""
-        pass
+
+        # prevent negative withdraws
+        if amount < 0:
+            raise ValueError("Negative withdraws are invalid!")
+
+        # prevent withdrawing more than total money (entering debt)
+        if amount > self.balance:
+            raise ValueError("Oversized withdraws (balance < 0) are invalid!")
+
+        # withdraw value
+        self.balance -= amount
+
+        # only add to transactions if not zero
+        if amount != 0:
+            # each transaction is dict of type and value
+            transaction = {"type": "withdraw", "value": amount}
+            self.transactions.append(transaction)
+
 
     def get_balance(self) -> float:
         """Return the current balance."""
