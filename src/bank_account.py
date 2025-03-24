@@ -3,6 +3,9 @@ This module contains a class that represents a bank account.
 The account supports deposit, withdraw, and get_balance operations.
 Serialization and deserialization of the account is implemented using json.
 """
+
+import json
+
 class BankAccount:
     """A simple BankAccount class with methods to deposit, withdraw, and get_balance."""
 
@@ -22,13 +25,26 @@ class BankAccount:
 
     def from_json(self) -> dict | None:
         """Deserialize a BankAccount object from a json file."""
-        pass
+        try:
+            with open(f"{self.account_number}.json", "r") as f:
+                return json.loads(f.readline())
+        except FileNotFoundError:
+            return None
+    
 
-    def to_json(self) -> str:
+    def to_json(self):
         """Serialize a BankAccount object to a json file."""
-        pass
+        with open(f"{self.account_number}.json", "w") as f:
+            f.write(f'{{"account_number": {self.account_number}, "owner": "{self.owner}", "balance": {self.balance}, "transactions": [')
 
-    def deposit(self, amount: float):
+            # ensure strings wrapped in double quotes (JSON requirement)
+            fixed_transactions = [f'"{transaction}"' for transaction in self.transactions]
+
+            # add comma separated transactions to string and close parens
+            f.write(", ".join(fixed_transactions) + ']}')
+
+
+    def deposit(self, amount: float) -> None:
         """Deposit a positive amount to the account."""
 
         # prevent negative deposits
@@ -40,12 +56,10 @@ class BankAccount:
 
         # only add to transactions if not zero
         if amount != 0:
-            # each transaction is dict of type and value
-            transaction = {"type": "deposit", "value": amount}
-            self.transactions.append(transaction)
+            self.transactions.append(f'Deposit of ¤{amount}')
 
 
-    def withdraw(self, amount: float):
+    def withdraw(self, amount: float) -> None:
         """Withdraw a positive amount if sufficient balance exists."""
 
         # prevent negative withdraws
@@ -61,15 +75,14 @@ class BankAccount:
 
         # only add to transactions if not zero
         if amount != 0:
-            # each transaction is dict of type and value
-            transaction = {"type": "withdraw", "value": amount}
-            self.transactions.append(transaction)
+            self.transactions.append(f'Withdraw of ¤{amount}')
 
 
     def get_balance(self) -> float:
         """Return the current balance."""
         return self.balance
         
-    def show_transactions(self):
+    def show_transactions(self) -> None:
         """Prints all account transactions."""
-        print(self.transactions)
+        for transaction in self.transactions:
+            print(transaction)
